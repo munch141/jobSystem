@@ -1,0 +1,75 @@
+﻿@page "/"
+
+<PageTitle>Queue job</PageTitle>
+
+@using jobSystem.Data
+@inject JobQueue JobQueue
+@inherits OwningComponentBase
+
+<h1>Job scheduling</h1>
+<p>Jobs on queue: @JobQueue.CurrentJobsCount</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Worker</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @for (int i = 0; i < workers.Count(); i++)
+        {
+            <tr>
+                <td>@(i+1)</td>
+                <td>@workers.ElementAt(i).Status</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<button class="btn btn-primary" @onclick="AddJob">Add a job</button>
+<button class="btn btn-primary" @onclick="AddFailingJob">Add a failing job</button>
+
+@code {
+    private IEnumerable<Worker> workers;
+
+    protected override void OnInitialized()
+    {
+        JobQueue.QueueChanged += () => InvokeAsync(StateHasChanged);
+
+        workers = ScopedServices
+            .GetServices<IHostedService>()
+            .Where(hostedService => hostedService.GetType() == typeof(Worker))
+            .Select(hostedService => {
+                var worker = (Worker)hostedService;
+                worker.WorkerStatusChanged += () => InvokeAsync(StateHasChanged)                ;
+                
+                return worker;
+            });
+
+        base.OnInitialized();
+    }
+
+    private void AddJob()
+    {
+        var job = (CancellationToken cancellationToken) => {
+            return Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);
+        };
+
+        JobQueue.Enqueue(job);
+    }
+
+    private void AddFailingJob()
+    {
+        var job = (CancellationToken cancellationToken) => {
+            Thread.Sleep(3000);
+
+            throw new Exception("This is a failing job.");
+
+            return Task.CompletedTask;
+        };
+
+        JobQueue.Enqueue(job);
+    }
+}
