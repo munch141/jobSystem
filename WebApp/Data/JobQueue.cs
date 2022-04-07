@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace jobSystem.Data
+namespace WebApp.Data
 {
     public class JobQueue
     {

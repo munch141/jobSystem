@@ -1,4 +1,4 @@
-namespace jobSystem.Data
+namespace WebApp.Data
 {
     public class Worker : BackgroundService
     {
