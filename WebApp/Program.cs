@@ -1,21 +1,8 @@
-using WebApp.Data;
-using Serilog;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<JobQueue>();
-
-var maxWorkers = int.Parse(builder.Configuration["MaxWorkers"]);
-
-for (int i = 0; i < maxWorkers; i++)
-{
-    builder.Services.AddSingleton<IHostedService, Worker>();
-}
-
-builder.Host.UseSerilog((_, loggerConfiguration) => loggerConfiguration.WriteTo.Console());
 
 var app = builder.Build();
 

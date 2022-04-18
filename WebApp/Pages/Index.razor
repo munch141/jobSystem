@@ -2,14 +2,14 @@
 
 <PageTitle>Queue job</PageTitle>
 
-@using WebApp.Data
+@using ApplicationCore
 @inject JobQueue JobQueue
 @inherits OwningComponentBase
 
 <h1>Job scheduling</h1>
-<p>Jobs on queue: @JobQueue.CurrentJobsCount</p>
+@*<p>Jobs on queue: @JobQueue.CurrentJobsCount</p>*@
 
-<table class="table">
+@*<table class="table">
     <thead>
         <tr>
             <th>Worker</th>
@@ -26,50 +26,50 @@
             </tr>
         }
     </tbody>
-</table>
+</table>*@
 
-<button class="btn btn-primary" @onclick="AddJob">Add a job</button>
-<button class="btn btn-primary" @onclick="AddFailingJob">Add a failing job</button>
+@*<button class="btn btn-primary" @onclick="AddJob">Add a job</button>
+<button class="btn btn-primary" @onclick="AddFailingJob">Add a failing job</button>*@
 
 @code {
-    private IEnumerable<Worker> workers;
+    //private IEnumerable<Worker> workers;
 
-    protected override void OnInitialized()
-    {
-        JobQueue.QueueChanged += () => InvokeAsync(StateHasChanged);
+    //protected override void OnInitialized()
+    //{
+    //    JobQueue.QueueChanged += () => InvokeAsync(StateHasChanged);
 
-        workers = ScopedServices
-            .GetServices<IHostedService>()
-            .Where(hostedService => hostedService.GetType() == typeof(Worker))
-            .Select(hostedService => {
-                var worker = (Worker)hostedService;
-                worker.WorkerStatusChanged += () => InvokeAsync(StateHasChanged)                ;
+    //    workers = ScopedServices
+    //        .GetServices<IHostedService>()
+    //        .Where(hostedService => hostedService.GetType() == typeof(Worker))
+    //        .Select(hostedService => {
+    //            var worker = (Worker)hostedService;
+    //            worker.WorkerStatusChanged += () => InvokeAsync(StateHasChanged);
                 
-                return worker;
-            });
+    //            return worker;
+    //        });
 
-        base.OnInitialized();
-    }
+    //    base.OnInitialized();
+    //}
 
-    private void AddJob()
-    {
-        var job = (CancellationToken cancellationToken) => {
-            return Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);
-        };
+    //private void AddJob()
+    //{
+    //    var job = (CancellationToken cancellationToken) => {
+    //        return Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);
+    //    };
 
-        JobQueue.Enqueue(job);
-    }
+    //    JobQueue.Enqueue(job);
+    //}
 
-    private void AddFailingJob()
-    {
-        var job = (CancellationToken cancellationToken) => {
-            Thread.Sleep(3000);
+    //private void AddFailingJob()
+    //{
+    //    var job = (CancellationToken cancellationToken) => {
+    //        Thread.Sleep(3000);
 
-            throw new Exception("This is a failing job.");
+    //        throw new Exception("This is a failing job.");
 
-            return Task.CompletedTask;
-        };
+    //        return Task.CompletedTask;
+    //    };
 
-        JobQueue.Enqueue(job);
-    }
+    //    JobQueue.Enqueue(job);
+    //}
 }

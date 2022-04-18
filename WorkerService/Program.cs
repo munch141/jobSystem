@@ -1,9 +1,14 @@
+using ApplicationCore;
 using WorkerService;
+using Serilog;
 
-IHost host = Host.CreateDefaultBuilder(args)
-    .ConfigureServices(services => {
+var builder = Host.CreateDefaultBuilder(args)
+    .ConfigureServices((context, services) => {
         services.AddHostedService<Worker>();
+        services.AddApplicationCore(context.Configuration);
     })
-    .Build();
+    .UseSerilog((_, loggerConfiguration) => loggerConfiguration.WriteTo.Console());
+
+IHost host = builder.Build();
 
 await host.RunAsync();
