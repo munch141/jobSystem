@@ -22,11 +22,14 @@ namespace ApplicationCore
             await db.ListRightPushAsync(_queueKey, new RedisValue(serializedJob));
         }
 
-        public async Task<Job> DequeueAsync()
+        public async Task<Job?> DequeueAsync()
         {
             var db = _redis.GetDatabase();
             var serializedJob = await db.ListLeftPopAsync(_queueKey);
-            var job = JsonSerializer.Deserialize<Job>(serializedJob.ToString());
+
+            var job = serializedJob.IsNullOrEmpty
+                ? null
+                : JsonSerializer.Deserialize<Job>(serializedJob.ToString());
 
             return job;
         }
@@ -35,15 +38,19 @@ namespace ApplicationCore
         {
             var db = _redis.GetDatabase();
             var serializedList = await db.ListRangeAsync(_queueKey);
-
-            if (serializedList == null)
-            {
-                throw new Exception("The list was not found");
-            }
-
-            var list = JsonSerializer.Deserialize<List<Job>>(serializedList.ToString());
+            var list = serializedList
+                .Select(serializedJob => JsonSerializer.Deserialize<Job>(serializedJob.ToString()))
+                .ToList();
 
             return list;
+        }
+
+        public async Task<long> CountAsync()
+        {
+            var db = _redis.GetDatabase();
+            var length = await db.ListLengthAsync(_queueKey);
+
+            return length;
         }
     }
 }
