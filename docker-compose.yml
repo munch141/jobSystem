@@ -17,11 +17,11 @@ services:
       context: .
       dockerfile: WebApp/Dockerfile
 
-  # workerservice:
-  #   image: ${DOCKER_REGISTRY-}workerservice
-  #   build:
-  #     context: .
-  #     dockerfile: WorkerService/Dockerfile
+  workerservice:
+    image: ${DOCKER_REGISTRY-}workerservice
+    build:
+      context: .
+      dockerfile: WorkerService/Dockerfile
 
   redis:
     image: 'redis:latest'

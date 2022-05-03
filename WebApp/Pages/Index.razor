@@ -31,12 +31,32 @@
 <button class="btn btn-primary" @onclick="AddJobAsync">Add a job</button>
 @* <button class="btn btn-primary" @onclick="AddFailingJob">Add a failing job</button> *@
 
+<table class="table">
+    <thead>
+        <tr>
+            <th>Job</th>
+            <th>Created at</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @for (int i = 0; i < jobs.Count; i++)
+        {
+            <tr>
+                <td>@jobs[i].Name</td>
+                <td>@jobs[i].CreatedAt.ToString("dd MMM yyyy")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
 @code {
-    private long jobCount;
+    private long jobCount => jobs.Count;
+    private List<Job> jobs = new List<Job>();
 
     protected override async Task OnInitializedAsync()
     {
-        this.jobCount = await JobQueue.CountAsync();
+        this.jobs = await JobQueue.ListAsync();
     }
 
     private async Task AddJobAsync()
@@ -48,7 +68,6 @@
         );
 
         await JobQueue.EnqueueAsync(newJob);
-
-        jobCount++;
+        this.jobs = await JobQueue.ListAsync();
     }
 }

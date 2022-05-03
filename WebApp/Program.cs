@@ -1,4 +1,5 @@
 using ApplicationCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddApplicationCore();
+
+builder.Host.UseSerilog((_, loggerConfiguration) => loggerConfiguration.WriteTo.Console());
 
 var app = builder.Build();
 
@@ -25,5 +28,6 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+
 
 app.Run();

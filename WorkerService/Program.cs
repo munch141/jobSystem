@@ -5,7 +5,7 @@ using Serilog;
 var builder = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) => {
         services.AddHostedService<Worker>();
-        services.AddApplicationCore(context.Configuration);
+        services.AddApplicationCore();
     })
     .UseSerilog((_, loggerConfiguration) => loggerConfiguration.WriteTo.Console());
 
