@@ -1,17 +1,19 @@
 ﻿using StackExchange.Redis;
 using System.Text.Json;
 
-namespace ApplicationCore
+namespace WebApp
 {
     public class JobQueue
     {
         private IConnectionMultiplexer _redis { get; set; }
         private RedisKey _queueKey { get; set; }
+        private SemaphoreSlim _semaphore { get; set; }
 
         public JobQueue(IConnectionMultiplexer redis)
         {
             _redis = redis;
             _queueKey = new RedisKey("jobQueue");
+            _semaphore = new SemaphoreSlim(0);
         }
 
         public async Task EnqueueAsync(Job job)
@@ -20,10 +22,13 @@ namespace ApplicationCore
             var serializedJob = JsonSerializer.Serialize(job);
 
             await db.ListRightPushAsync(_queueKey, new RedisValue(serializedJob));
+            _semaphore.Release();
         }
 
         public async Task<Job?> DequeueAsync()
         {
+            await _semaphore.WaitAsync();
+            
             var db = _redis.GetDatabase();
             var serializedJob = await db.ListLeftPopAsync(_queueKey);
 
