@@ -20,8 +20,9 @@ namespace WebApp
         {
             var db = _redis.GetDatabase();
             var serializedJob = JsonSerializer.Serialize(job);
-
+            
             await db.ListRightPushAsync(_queueKey, new RedisValue(serializedJob));
+            
             _semaphore.Release();
         }
 
@@ -31,7 +32,6 @@ namespace WebApp
             
             var db = _redis.GetDatabase();
             var serializedJob = await db.ListLeftPopAsync(_queueKey);
-
             var job = serializedJob.IsNullOrEmpty
                 ? null
                 : JsonSerializer.Deserialize<Job>(serializedJob.ToString());

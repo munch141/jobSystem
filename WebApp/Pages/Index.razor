@@ -8,27 +8,7 @@
 <h1>Job scheduling</h1>
 <p>Jobs on queue: @jobCount</p>
 
-@* <table class="table">
-    <thead>
-        <tr>
-            <th>Worker</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-
-    <tbody>
-        @for (int i = 0; i < workers.Count(); i++)
-        {
-            <tr>
-                <td>@(i+1)</td>
-                <td>@workers.ElementAt(i).Status</td>
-            </tr>
-        }
-    </tbody>
-</table> *@
-
 <button class="btn btn-primary" @onclick="AddJobAsync">Add a job</button>
-@* <button class="btn btn-primary" @onclick="AddFailingJob">Add a failing job</button> *@
 
 <table class="table">
     <thead>
@@ -67,6 +47,5 @@
         );
 
         await JobQueue.EnqueueAsync(newJob);
-        this.jobs = await JobQueue.ListAsync();
     }
 }
