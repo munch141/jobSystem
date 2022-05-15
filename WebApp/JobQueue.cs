@@ -9,11 +9,22 @@ namespace WebApp
         private RedisKey _queueKey { get; set; }
         private SemaphoreSlim _semaphore { get; set; }
 
+        public event EventHandler QueueUpdated;
+
         public JobQueue(IConnectionMultiplexer redis)
         {
             _redis = redis;
             _queueKey = new RedisKey("jobQueue");
             _semaphore = new SemaphoreSlim(0);
+        }
+
+        public async Task InitializeQueueAsync()
+        {
+            var jobCount = await CountAsync();
+
+            if (jobCount > 0) {
+                _semaphore.Release((int) jobCount);
+            }
         }
 
         public async Task EnqueueAsync(Job job)
@@ -22,6 +33,7 @@ namespace WebApp
             var serializedJob = JsonSerializer.Serialize(job);
             
             await db.ListRightPushAsync(_queueKey, new RedisValue(serializedJob));
+            QueueUpdated?.Invoke(this, EventArgs.Empty);
             
             _semaphore.Release();
         }
@@ -35,6 +47,8 @@ namespace WebApp
             var job = serializedJob.IsNullOrEmpty
                 ? null
                 : JsonSerializer.Deserialize<Job>(serializedJob.ToString());
+
+            QueueUpdated?.Invoke(this, EventArgs.Empty);
 
             return job;
         }

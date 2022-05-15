@@ -15,7 +15,7 @@
         public Task GetTask() {
             var task = this.Name switch
             {
-                _ => Task.Delay(TimeSpan.FromSeconds(30))
+                _ => Task.Delay(TimeSpan.FromSeconds(5))
             };
 
             return task;

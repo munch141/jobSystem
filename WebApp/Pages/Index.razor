@@ -1,9 +1,12 @@
 ﻿@page "/"
-
-<PageTitle>Queue job</PageTitle>
+@using Microsoft.AspNetCore.SignalR.Client
 
 @inject JobQueue JobQueue
+@inject ILogger<Index> logger
+@inject IHostEnvironment HostEnvironment
+@inject IJSRuntime JsRuntime
 @inherits OwningComponentBase
+@implements IAsyncDisposable
 
 <h1>Job scheduling</h1>
 <p>Jobs on queue: @jobCount</p>
@@ -32,10 +35,44 @@
 @code {
     private long jobCount => jobs.Count;
     private List<Job> jobs = new List<Job>();
+    private HubConnection? hubConnection;
 
     protected override async Task OnInitializedAsync()
     {
+        this.hubConnection = new HubConnectionBuilder()
+            .WithUrl(
+                "https://webapp/jobStatusHub",
+                conf => {
+                    if (HostEnvironment.IsDevelopment()) {
+                        conf.HttpMessageHandlerFactory = (_) => new HttpClientHandler
+                        {
+                            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                        };
+                    }
+                }
+            )
+            .Build();
+
+        hubConnection.On<string, string>("JobStatusUpdate", async (jobId, status) =>
+        {
+            await this.JsRuntime.InvokeVoidAsync("console.log", $"Status update: {jobId} {status}");
+        });
+
+        await hubConnection.StartAsync();
+
+        JobQueue.QueueUpdated += this.UpdateListAsync;
+
         this.jobs = await JobQueue.ListAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+
+        JobQueue.QueueUpdated -= this.UpdateListAsync;
     }
 
     private async Task AddJobAsync()
@@ -47,5 +84,11 @@
         );
 
         await JobQueue.EnqueueAsync(newJob);
+    }
+
+    private async void UpdateListAsync(object? sender, EventArgs e)
+    {
+        this.jobs = await JobQueue.ListAsync();
+        await InvokeAsync(StateHasChanged);
     }
 }
