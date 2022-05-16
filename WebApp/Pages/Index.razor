@@ -1,40 +1,18 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.SignalR.Client
+@using WebApp.Components
 
 @inject JobQueue JobQueue
-@inject ILogger<Index> logger
 @inject IHostEnvironment HostEnvironment
 @inject IJSRuntime JsRuntime
-@inherits OwningComponentBase
 @implements IAsyncDisposable
 
 <h1>Job scheduling</h1>
-<p>Jobs on queue: @jobCount</p>
 
-<button class="btn btn-primary" @onclick="AddJobAsync">Add a job</button>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Job</th>
-            <th>Created at</th>
-        </tr>
-    </thead>
-
-    <tbody>
-        @for (int i = 0; i < jobs.Count; i++)
-        {
-            <tr>
-                <td>@jobs[i].Name</td>
-                <td>@jobs[i].CreatedAt.ToString("dd MMM yyyy")</td>
-            </tr>
-        }
-    </tbody>
-</table>
+<AddJobButton />
+<PendingJobsTable />
 
 @code {
-    private long jobCount => jobs.Count;
-    private List<Job> jobs = new List<Job>();
     private HubConnection? hubConnection;
 
     protected override async Task OnInitializedAsync()
@@ -59,10 +37,6 @@
         });
 
         await hubConnection.StartAsync();
-
-        JobQueue.QueueUpdated += this.UpdateListAsync;
-
-        this.jobs = await JobQueue.ListAsync();
     }
 
     public async ValueTask DisposeAsync()
@@ -71,24 +45,5 @@
         {
             await hubConnection.DisposeAsync();
         }
-
-        JobQueue.QueueUpdated -= this.UpdateListAsync;
-    }
-
-    private async Task AddJobAsync()
-    {
-        var newJob = new Job(
-            Guid.NewGuid(),
-            $"Job {this.jobCount + 1}",
-            DateTime.Now
-        );
-
-        await JobQueue.EnqueueAsync(newJob);
-    }
-
-    private async void UpdateListAsync(object? sender, EventArgs e)
-    {
-        this.jobs = await JobQueue.ListAsync();
-        await InvokeAsync(StateHasChanged);
     }
 }

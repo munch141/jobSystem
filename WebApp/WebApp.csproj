@@ -17,4 +17,10 @@
     <PackageReference Include="StackExchange.Redis" Version="2.5.61" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Components\PendingJobsTable.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+
 </Project>

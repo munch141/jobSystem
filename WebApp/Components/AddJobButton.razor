@@ -1,0 +1,20 @@
+﻿@using Microsoft.AspNetCore.SignalR.Client
+
+@inject JobQueue JobQueue
+
+<button class="btn btn-primary" @onclick="AddJobAsync">Add a job</button>
+
+@code {
+    private int jobCount = 0;
+
+    private async Task AddJobAsync()
+    {
+        var newJob = new Job(
+            Guid.NewGuid(),
+            $"Job name { this.jobCount++ }",
+            DateTime.Now
+        );
+
+        await JobQueue.EnqueueAsync(newJob);
+    }
+}
