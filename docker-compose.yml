@@ -1,8 +1,8 @@
 version: '3.4'
 
 services:
-  webapp:
-    image: ${DOCKER_REGISTRY-}webapp
+  webapi:
+    image: ${DOCKER_REGISTRY-}webapi
     volumes:
       - ~/.aspnet/https:/https:ro
     ports:
@@ -14,10 +14,19 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__Password=password
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
     build:
-      context: .
-      dockerfile: WebApp/Dockerfile
+      context: ./server/WebApi
 
   redis:
     image: 'redis:latest'
     ports:
       - '6379:6379'
+
+  clientapp:
+    image: ${DOCKER_REGISTRY-}clientapp
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    ports:
+      - '8080:8080'
+    build:
+      context: ./client
