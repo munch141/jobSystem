@@ -1,8 +1,8 @@
 version: '3.4'
 
 services:
-  webapi:
-    image: ${DOCKER_REGISTRY-}webapi
+  server:
+    image: ${DOCKER_REGISTRY-}server
     volumes:
       - ~/.aspnet/https:/https:ro
     ports:
@@ -14,19 +14,22 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__Password=password
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
     build:
-      context: ./server/WebApi
+      context: ./server
 
   redis:
     image: 'redis:latest'
     ports:
       - '6379:6379'
-
-  clientapp:
-    image: ${DOCKER_REGISTRY-}clientapp
-    volumes:
-      - ./client:/app
-      - /app/node_modules
-    ports:
-      - '8080:80'
-    build:
-      context: ./client
+# hot reload is not working, it seems to be a windows issue...
+# clientapp:
+#   image: ${DOCKER_REGISTRY-}clientapp
+#   volumes:
+#     - ./client:/app
+#     - /app/node_modules
+#   ports:
+#     - '8080:8080'
+#   environment:
+#     - CHOKIDAR_USEPOLLING=true
+#   build:
+#     context: ./client
+#     dockerfile: Dockerfile.dev
