@@ -10,8 +10,20 @@ builder.Services.AddSignalR();
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:8080")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
+});
+
 // add redis and job queue
-var multiplexer = ConnectionMultiplexer.Connect("redis:6379");
+var multiplexer = ConnectionMultiplexer.Connect(builder.Configuration["RedisUrl"]);
 var jobQueue = new JobQueue(multiplexer);
 await jobQueue.InitializeQueueAsync();
 
@@ -37,7 +49,7 @@ app.MapHub<JobStatusHub>("/jobStatusHub");
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseCors(policyBuilder => policyBuilder.AllowAnyOrigin());
+    app.UseCors();
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
