@@ -47,9 +47,10 @@ app.UseHttpsRedirection();
 app.MapControllers();
 app.MapHub<JobsHub>("/jobsHub");
 
+app.UseCors();
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseCors();
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
