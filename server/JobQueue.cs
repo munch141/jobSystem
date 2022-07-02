@@ -32,7 +32,7 @@ namespace WebApi
             var db = _redis.GetDatabase();
             var serializedJob = JsonSerializer.Serialize(job);
             
-            await db.ListRightPushAsync(_queueKey, new RedisValue(serializedJob));
+            var result = await db.ListRightPushAsync(_queueKey, new RedisValue(serializedJob));
             QueueUpdated?.Invoke(this, EventArgs.Empty);
             
             _semaphore.Release();

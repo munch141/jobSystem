@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using WebApi.Hubs;
 
 namespace WebApi.Controllers
 {
@@ -6,11 +8,16 @@ namespace WebApi.Controllers
     [ApiController]
     public class JobsController : ControllerBase
     {
-        private JobQueue _jobQueue;
+        private readonly JobQueue _jobQueue;
 
-        public JobsController(JobQueue jobQueue)
+        private readonly IHubContext<JobsHub, IJobsClient> _jobsHubContext;
+
+        public JobsController(
+            JobQueue jobQueue,
+            IHubContext<JobsHub, IJobsClient> jobsHubContext)
         {
             _jobQueue = jobQueue;
+            _jobsHubContext = jobsHubContext;
         }
 
         [Route("pending")]
@@ -20,6 +27,17 @@ namespace WebApi.Controllers
             var pendingJobs = await _jobQueue.ListAsync();
 
             return Ok(pendingJobs);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<CreatedResult> CreateJob(Job job)
+        {
+            await _jobQueue.EnqueueAsync(job);
+
+            await _jobsHubContext.Clients.All.EnqueueJob(job);
+
+            return Created($"job/{job.Id}", job);
         }
     }
 }

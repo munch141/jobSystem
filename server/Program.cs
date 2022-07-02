@@ -45,7 +45,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.UseHttpsRedirection();
 app.MapControllers();
-app.MapHub<JobStatusHub>("/jobStatusHub");
+app.MapHub<JobsHub>("/jobsHub");
 
 if (app.Environment.IsDevelopment())
 {

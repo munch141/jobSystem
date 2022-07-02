@@ -5,11 +5,16 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "nswag-help": "nswag help",
+    "nswag-new": "nswag new",
+    "nswag-run": "nswag run"
   },
   "dependencies": {
     "@microsoft/signalr": "^6.0.6",
+    "@types/uuid": "^8.3.4",
     "core-js": "^3.8.3",
+    "uuid": "^8.3.2",
     "vue": "^3.2.13"
   },
   "devDependencies": {
@@ -25,6 +30,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-vue": "^8.0.3",
+    "nswag": "^13.16.1",
     "postcss": "^8.4.14",
     "prettier": "^2.4.1",
     "tailwindcss": "^3.1.4",
